@@ -4,11 +4,15 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
+var fs=require('fs-extra');
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var config=require('config');
 
 var app = express();
+fs.mkdirsSync(config.pictureFile.headPictureFile);
+fs.mkdirsSync(config.pictureFile.messagePictureFile);
+fs.mkdirsSync(config.pictureFile.uploadPictureFile);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
