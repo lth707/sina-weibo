@@ -1,20 +1,21 @@
 /**
  * Created by duoyi on 2016/8/15.
  */
+var moment = require('moment-timezone');
 module.exports=function(sequelize,DataTypes){
     return sequelize.define('comment',{
         _id: {
-            type: DataTypes.UUID,
+            type: DataTypes.STRING(50),
             defaultValue:DataTypes.UUIDV1,
             primaryKey: true
         },//唯一的标志
         creatAt:{
-            type:DataTypes.DATE,
+            type:DataTypes.STRING(30),
             allowNull:false,
-            defaultValue:new Date()
+            defaultValue:moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss')
         },//创建时间
         content:{
-            type:DataTypes.STRING(256),
+            type:DataTypes.STRING(255),
             allowNull:false
         },//评论的内容
         email: {
@@ -34,5 +35,7 @@ module.exports=function(sequelize,DataTypes){
             type: DataTypes.UUID,
             allowNull:false
         }//表示是评论哪条微博
+    }, {
+        timestamps: false
     });
 }

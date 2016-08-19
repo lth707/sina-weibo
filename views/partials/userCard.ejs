@@ -1,0 +1,26 @@
+<div class="ui cards">
+    <div class="card">
+        <div class="content">
+            <div class="userCard">
+                <div class="info">
+                    <p><%= locals.user.nickName%></p>
+                    <p class="meta"><%=locals.user.gender%></p>
+                </div>
+            </div>
+            <div class="description">
+                <%=locals.user.signature%>
+            </div>
+        </div>
+        <%if (locals.user){%>
+            <div class="extra content">
+                <a href="/user/<%= locals.user.email%>" class=""><i class="home icon"></i>个人主页</a>
+                <a href="#" class="right floated"><i class="setting icon"></i>设置</a>
+            </div>
+        <%}else{%>
+            <div class="extra content">
+                <a class=""><i class="send icon"></i>私信</a>
+                <a class="right floated"><i class="plus icon"></i>加为好友</a>
+            </div>
+        <%}%>
+    </div>
+</div>

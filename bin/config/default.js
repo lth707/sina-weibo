@@ -3,7 +3,6 @@
  */
 var path=require('path');
 var filePath='/sinaWeiboPictures/'
-
 module.exports = {
     picturesHostAndPort:'http://127.0.0.1:3000',
     mysql: {
