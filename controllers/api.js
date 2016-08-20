@@ -3,6 +3,7 @@
  */
 var dbAccess = require('../services');
 var Promise = require('bluebird').noConflict();
+var moment = require('moment-timezone');
 exports.getSignup = getSignup;
 exports.postSignup = postSignup;
 exports.checkLogin = checkLogin;
@@ -161,6 +162,7 @@ function postCreate(req, res, next) {
         message.commentCount = 0;
         message.from = '';
         message.pictures = '';
+        message.creatAt=moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
         dbAccess.createMessage(message).then(function (result) {
             req.flash('success', '发布成功！');
             return res.redirect('/');
