@@ -27,9 +27,11 @@ function getIndex(req, res, next) {
                 return dbAccess.getUserByEmail(result.email).then(function (user) {
                     delete user.password;
                     result.user = user;
+                    return;
                 })
             }).then(function () {
                 res.locals.messageArr = results
+                return;
             })
         }).then(function () {
             return res.render('index');
@@ -162,7 +164,7 @@ function postCreate(req, res, next) {
         message.commentCount = 0;
         message.from = '';
         message.pictures = '';
-        message.creatAt=moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
+        message.creatAt = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
         dbAccess.createMessage(message).then(function (result) {
             req.flash('success', '发布成功！');
             return res.redirect('/');
@@ -177,7 +179,52 @@ function postCreate(req, res, next) {
 
 function getUserInfo(req, res, next) {
     var email = req.params['email'];
-    dbAccess.getUserInfo(email).then(function (result) {
-        return res.send(result);
-    });
+    Promise.resolve().then(function () {
+        if (req.session[req.session.id]&&email == req.session[req.session.id].email) {
+            res.locals.tabTitles = ['我的主页', '我的相册', '管理中心'];
+            res.locals.tabTitle = req.query.tabTitle || '我的主页';
+            res.locals.lookUser = req.session[req.session.id]
+            return;
+        } else {
+            return dbAccess.getUserByEmail(email).then(function (data) {
+                delete data.password;
+                res.locals.lookUser = data;
+                if (data.gender == '男') {
+                    res.locals.tabTitles = ['他的主页', '他的相册'];
+                    res.locals.tabTitle = req.query.tabTitle || '他的主页';
+                } else {
+                    res.locals.tabTitles = ['她的主页', '她的相册'];
+                    res.locals.tabTitle = req.query.tabTitle || '她的主页';
+                }
+                return;
+            });
+        }
+    }).then(function () {
+        res.locals.tabs = ["全部", "原创", "图片", "视频", "音乐", '文章'];
+        res.locals.tab = req.query.tab || '全部';
+        var p = res.locals.p = req.query.p || 1;
+        return dbAccess.getPersonMessageCount({email: email, tab: req.query.tab}).then(function (result) {
+            res.locals.total = result;
+        }).then(function () {
+            return dbAccess.getPersonMessage({
+                email: email,
+                tab: req.query.tab,
+                offset: (p - 1) * 10,
+                limit: 10
+            }).then(function (results) {
+                return Promise.each(results, function (result) {
+                    return dbAccess.getUserByEmail(result.email).then(function (user) {
+                        delete user.password;
+                        result.user = user;
+                        return;
+                    })
+                }).then(function () {
+                    res.locals.messageArr = results
+                    return;
+                })
+            });
+        })
+    }).then(function () {
+        res.render('user');
+    })
 }
