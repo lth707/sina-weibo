@@ -37,9 +37,10 @@ app.use(expressSession({
 
 app.use(flash());
 app.use(function resLocalsInit(req, res, next) {
+    
     var sess = req.session;
-    if (sess.user) {
-        res.locals.user = sess.user;
+    if (sess[req.session.id]) {
+        res.locals.user = sess[req.session.id];
     } else {
         res.locals.user = null;
     }

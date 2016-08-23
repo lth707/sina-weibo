@@ -50,7 +50,7 @@ function postLogin(req, res, next) {
             user.signature = result.signature;
             user.gender = result.gender;
             user.head = result.head;
-            req.session.user = user;
+            req.session[req.session.id] = user;
             req.flash('success', '登录成功！');
             return res.send({code: 200});
         } else {
@@ -87,7 +87,7 @@ function postSignup(req, res, next) {
 
 
 function checkLogin(req, res, next) {
-    if (req.session && req.session.user) {
+    if (req.session && req.session[req.session.id]) {
         req.flash('error', '用户已登录！');
         return res.redirect('/');
     } else {
@@ -125,8 +125,8 @@ function checkFormData(req, res, next) {
 
 }
 function logout(req, res, next) {
-    if (req.session.user) {
-        req.session.user = null;
+    if (req.session[req.session.id]) {
+        req.session[req.session.id] = null;
         req.flash('success', '已退出登录！');
         return res.redirect('/');
     } else {
@@ -136,7 +136,7 @@ function logout(req, res, next) {
 }
 
 function getCreate(req, res, next) {
-    if (req.session && req.session.user) {
+    if (req.session && req.session[req.session.id]) {
         res.locals.tabs = ["全部", "原创", "图片", "视频", "音乐", '文章'];
         return res.render('create');
     } else {
@@ -149,7 +149,7 @@ function postCreate(req, res, next) {
     console.log(req.body);
     var message = new Object();
 
-    if (req.session && req.session.user) {
+    if (req.session && req.session[req.session.id]) {
         if (req.body.email == '' || req.body.content == '' || req.body.tab == '') {
             req.flash('error', '请填写完整！');
             return res.redirect('/create');
