@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Sina-Weibo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.12.0/semantic.min.css">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <script src="/javascripts/jquery-1.11.2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.12.0/semantic.min.js"></script>
+</head>
+<body>
+<div class="ui fixed menu navbar">
+    <div class="container">
+        <a href="/" class="item">微博</a>
+        <div class="item">一个分享与发现的地方</div>
+        <div class="right menu">
+            <% if(locals.user){%>
+            欢迎<a href="/" ><%locals.user.name%></a>
+            <a href="/logout" class="item">登出</a>
+            <% }else{ %>
+            <a href="/signup" class="item">注册</a>
+            <a href="/login" class="item">登录</a>
+            <% } %>
+        </div>
+    </div>
+</div>
+<% if(locals.messages.success){ %>
+<div class="flash">
+    <div class="ui green message"><i class="close icon"></i><%= locals.messages.success %></div>
+</div>
+<% } %>
+<% if(locals.messages.error){ %>
+<div class="flash">
+    <div class="ui red message"><i class="close icon"></i><%= locals.messages.error %></div>
+</div>
+<% } %>
+<script type="text/javascript">
+    $('.message .close').on('click', function () {
+        $(this).closest('.message').fadeOut();
+    })
+</script>
+</body>
+</html>

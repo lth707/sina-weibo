@@ -1,0 +1,41 @@
+<% include header %>
+<div class="container">
+    <div class="ui two column centered grid">
+        <div class="right floated left aligned four wide column">
+            <% if(locals.user){ %>
+            <% var name = locals.user.name %>
+            <% include partials/userCard %>
+            <% include partials/createCard %>
+            <% } %>
+
+            <% include partials/linkCard %>
+        </div>
+        <div class="left floated twelve wide column">
+            <%if(locals.tabTitles.length==3){%>
+            <div class="ui three item menu">
+                <%locals.tabTitles.forEach(function (tabTitle){%>
+                <a href="/user/<%=lookUser.email%>?tabTitle=<%= tabTitle%>" class="item <%= (tabTitle==locals.tabTitle)?'active':''%>"><%= tabTitle%></a>
+                <%});%>
+            </div>
+            <%}else{%>
+            <div class="ui two item menu">
+                <%locals.tabTitles.forEach(function (tabTitle) {%>
+                <a href="/user/<%=lookUser.email%>?tabTitle=<%= tabTitle%>" class="item <%= (tabTitle==locals.tabTitle)?'active':''%>"><%= tabTitle%></a>
+                <%})%>
+            </div>
+            <%}%>
+            </br>
+            <%if(locals.tabTitle=='我的主页'||locals.tabTitle=='他的主页'||locals.tabTitle=='她的主页'){%>
+            <div class="ui top attached tabular menu">
+                <a href="/user/<%=lookUser.email%>" class="item <%= (locals.tab==locals.tabs[0]) ? 'active':''%>"><%= locals.tabs[0]%></a>
+                <% locals.tabs.slice(1).forEach(function (tab) {%>
+                <a href="/user/<%=lookUser.email%>?tab=<%= tab%>" class="item <%= (locals.tab==tab)?'active':''%>"><%= tab%></a>
+                <%})%>
+            </div>
+            <% include partials/list %>
+            <% include partials/pagination %>
+            <%}%>
+        </div>
+    </div>
+</div>
+<% include footer %>

@@ -28,5 +28,7 @@ module.exports=function (sequelize,DataTypes) {
             type:DataTypes.STRING(50),
             allowNull:true
         }//用户头像
+    }, {
+        timestamps: false
     });
 }

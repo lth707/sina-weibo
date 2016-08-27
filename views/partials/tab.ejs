@@ -1,0 +1,6 @@
+<div class="ui top attached tabular menu">
+    <a href="/" class="item <%= (locals.tab==locals.tabs[0]) ? 'active':''%>"><%= locals.tabs[0]%></a>
+    <% locals.tabs.slice(1).forEach(function (tab) {%>
+        <a href="/?tab=<%= tab%>" class="item <%= (locals.tab==tab)?'active':''%>"><%= tab%></a>
+    <%})%>
+</div>
