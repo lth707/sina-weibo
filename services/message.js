@@ -21,3 +21,20 @@ exports.getMessageCount=function (option) {
       return db.message.count();
    }
 }
+
+
+exports.getPersonMessageCount=function (option) {
+   if(option.email&&option.tab&&option.tab!='全部'){
+      return db.message.count({where:{email:option.email,tab:option.tab}});
+   }else{
+      return db.message.count({where:{email:option.email}});
+   }
+}
+
+exports.getPersonMessage=function (option) {
+   if(option.email&&option.tab&&option.tab!='全部'){
+      return db.message.findAll({where:{email:option.email,tab:option.tab},order:[['creatAt','DESC']],offset:option.offset,limit:option.limit,raw:true});
+   }else{
+      return db.message.findAll({where:{email:option.email},order:[['creatAt','DESC']],offset:option.offset,limit:option.limit,raw:true});
+   }
+}

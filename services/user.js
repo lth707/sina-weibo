@@ -20,7 +20,3 @@ exports.getUser=function (body) {
     return db.user.findOne({
        where:{email:decodeURIComponent(body.email), password:decodeURIComponent(body.password)},raw:true})
 }
-
-exports.getUserInfo=function (email) {
-    return db.user.findOne({where:{email:email},raw:true});
-}
