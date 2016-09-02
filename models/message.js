@@ -44,7 +44,6 @@ module.exports=function (sequelize,DataTypes) {
         pictures:{
             type:DataTypes.TEXT,
             allowNull:true,
-            defaultValue:''
         },//消息的图片。
         tab:{
             type:DataTypes.ENUM("原创","图片","视频","音乐",'文章'),

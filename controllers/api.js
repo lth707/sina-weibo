@@ -4,9 +4,11 @@
 var dbAccess = require('../services');
 var Promise = require('bluebird').noConflict();
 var moment = require('moment-timezone');
+var config=require('config');
 exports.getSignup = getSignup;
 exports.postSignup = postSignup;
 exports.checkLogin = checkLogin;
+exports.checkLogout = checkLogout;
 exports.checkFormData = checkFormData;
 exports.getLogin = getLogin;
 exports.postLogin = postLogin;
@@ -15,7 +17,11 @@ exports.logout = logout;
 exports.getCreate = getCreate;
 exports.postCreate = postCreate;
 exports.getUserInfo = getUserInfo
-
+exports.getMessageAndComment = getMessageAndComment;
+exports.postComment = postComment;
+exports.postGoodForMessage = postGoodForMessage;
+exports.getForwardAndMessage = getForwardAndMessage;
+exports.postForwardComment = postForwardComment;
 function getIndex(req, res, next) {
     res.locals.tabs = ["全部", "原创", "图片", "视频", "音乐", '文章'];
     res.locals.tab = req.query.tab || '全部';
@@ -94,6 +100,14 @@ function checkLogin(req, res, next) {
         return res.redirect('/');
     } else {
         next();
+    }
+}
+function checkLogout(req, res, next) {
+    if (req.session && req.session[req.session.id]) {
+        next();
+    } else {
+        req.flash('error', '请先登录！');
+        return res.redirect('/login');
     }
 }
 function checkFormData(req, res, next) {
@@ -180,7 +194,7 @@ function postCreate(req, res, next) {
 function getUserInfo(req, res, next) {
     var email = req.params['email'];
     Promise.resolve().then(function () {
-        if (req.session[req.session.id]&&email == req.session[req.session.id].email) {
+        if (req.session[req.session.id] && email == req.session[req.session.id].email) {
             res.locals.tabTitles = ['我的主页', '我的相册', '管理中心'];
             res.locals.tabTitle = req.query.tabTitle || '我的主页';
             res.locals.lookUser = req.session[req.session.id]
@@ -227,4 +241,131 @@ function getUserInfo(req, res, next) {
     }).then(function () {
         res.render('user');
     })
+};
+
+function getMessageAndComment(req, res, next) {
+    var _id = req.params['id'];
+    res.locals.user = req.session[req.session.id];
+    dbAccess.getMessage({_id: _id}).then(function (message) {
+        return dbAccess.getUserByEmail(message.email).then(function (user) {
+            delete user.password;
+            message.user = user;
+            res.locals.message = message;
+            return;
+        });
+    }).then(function () {
+        return dbAccess.getCommentsByMessageId({msgId: _id}).then(function (comments) {
+
+            return Promise.each(comments, function (comment) {
+                return dbAccess.getUserByEmail(comment.email).then(function (user) {
+                    delete user.password;
+                    comment.commentUser = user;
+                    if (comment.toEmail) {
+                        return dbAccess.getUserByEmail(comment.toEmail).then(function (user) {
+                            delete user.password;
+                            comment.toReplyUser = user;
+                            return;
+                        });
+                    } else {
+                        return;
+                    }
+                });
+            }).then(function () {
+                res.locals.message.comments = comments;
+                return;
+            })
+
+        })
+    }).then(function () {
+        // console.log(res.locals);
+        return res.render('message');
+
+    });
+}
+
+function postComment(req, res, next) {
+    var msgId = req.body.msgId;
+    var content = req.body.content;
+    var commentCount = parseInt(req.body.commentCount);
+    if (content == '') {
+        req.flash('error', '评论内容不能为空！');
+        return res.redirect('/comment/' + msgId);
+    } else {
+        var comment = new Object();
+        comment.email = req.session[req.session.id].email;
+        comment.toEmail = '';
+        comment.content = content;
+        comment.creatAt = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
+        comment.isForward = false;
+        comment.msgId = msgId;
+        dbAccess.createComment(comment).then(function () {
+            return dbAccess.upDateMessage({commentCount: commentCount + 1}, {where: {_id: msgId}});
+        }).then(function () {
+            req.flash('success', '评论成功！');
+            return res.redirect('/comment/' + msgId);
+        });
+    }
+
+}
+
+function postGoodForMessage(req, res, next) {
+    var supportCount = parseInt(req.body.supportCount);
+    var _id = req.body.id;
+    dbAccess.upDateMessage({supportCount: supportCount + 1}, {where: {_id: _id}}).then(function () {
+        return res.send({supportCount: supportCount + 1});
+    })
+}
+
+
+function getForwardAndMessage(req, res, next) {
+    if (req.session && req.session[req.session.id]) {
+        var msgId = req.query.id;
+        dbAccess.getMessage({_id: msgId}).then(function (message) {
+            return dbAccess.getUserByEmail(message.email).then(function (user) {
+                delete user.password;
+                message.dataValues.user = user;
+                return;
+            }).then(function () {
+                return dbAccess.getMessageFrowardComment({msgId: msgId}).then(function (forwardComments) {
+                    return Promise.each(forwardComments, function (forwardComment) {
+                        return dbAccess.getUserByEmail(forwardComment.email).then(function (user) {
+                            delete user.password;
+                            user.head = config.picturesHostAndPort + config.pictureFile.head + user.head;
+                            forwardComment.user = user;
+                            return;
+                        });
+                    }).then(function () {
+                        message.dataValues.forwardComments = forwardComments;
+                        console.log(message);
+                        return res.send({code: 200, message: JSON.stringify(message)});
+                    });
+                });
+            });
+        });
+    } else {
+        req.flash('error', '请先登录！');
+        return res.send({code: 304});
+    }
+}
+
+function postForwardComment(req, res, next) {
+    if (req.session && req.session[req.session.id]) {
+        var body=req.body;
+        var comment=new Object();
+        comment.email = req.session[req.session.id].email;
+        comment.toEmail = '';
+        comment.content = body.forwardCommentContent;
+        comment.creatAt = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
+        comment.isForward = true;
+        comment.msgId = body.msgId;
+        dbAccess.createComment(comment).then(function () {
+            return dbAccess.upDateMessage({commentCount:parseInt(body.commentCount)+1,forwardCount:parseInt(body.forwardCount)+1},{where:{_id:body.msgId}});
+        }).then(function () {
+            return res.send({commentCount:parseInt(body.commentCount)+1,forwardCount:parseInt(body.forwardCount)+1});
+        })
+    } else {
+        req.flash('error', '请先登录！');
+        return res.send({code: 304});
+    }
+    
 }

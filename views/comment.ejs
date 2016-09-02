@@ -2,29 +2,39 @@
     <div class="ui comments">
         <h3 class="ui header">评论</h3>
         <div class="ui divider"></div>
-        <% comments.forEach(function (comment) {%>
-            <div class="comment">
-                <div class="content">
-                    <a class="author" href="/user/<%=comment.user.name%>"><%=comment.user.name%></a>
-                    <div class="metadata">
+        <% locals.message.comments.forEach(function (comment) { %>
+        <div class="comment">
+            <div class="content">
+                <a class="avatar" href="/user/<%= comment.commentUser.email %>">
+                    <img src="<%=locals.picturesHostAndPort + locals.head + comment.commentUser.head %> %>">
+                </a>
+                <a class="author" href="/user/<%= comment.commentUser.email %>"><%= comment.commentUser.nickName %></a>
+                <% if(comment.toReplyUser){ %>
+                <div class="topic">
+                    回复
+                </div>
+                <a class="author" href="/user/<%= comment.toReplyUser.email %>"><%= comment.toReplyUser.nickName %></a>
+                <% } %>
+                <div class="metadata">
                         <span class="date">
-                            <%=: comment.updated_at|fromNow%>
+                            <%= comment.creatAt %>
                         </span>
-                    </div>
-                    <div class="text">
-                        <%-: comment.content|markdown%>
-                    </div>
+                </div>
+                <div class="text">
+                    <%= comment.content %>
                 </div>
             </div>
-        <%})%>
-        <%if ($this.session.user){%>
-           <form class="ui reply form" method="post">
-               <input type="hidden" name="topic_id" value="<%=topic._id%>">
-               <div class="field">
-                   <textarea name="content"></textarea>
-               </div>
-               <input type="submit" class="ui button" value="留言">
-           </form>
-        <%}%>
+        </div>
+        <% }); %>
+        <% if (locals.user){ %>
+        <form class="ui reply form" method="post" action="/comment">
+            <input type="hidden" name="msgId" value="<%= message._id %>">
+            <input type="hidden" name="commentCount" value="<%= message.commentCount %>">
+            <div class="field">
+                <textarea name="content"></textarea>
+            </div>
+            <input type="submit" class="ui button" value="评论">
+        </form>
+        <% } %>
     </div>
 </div>

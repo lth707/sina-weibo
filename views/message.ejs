@@ -1,0 +1,66 @@
+<% include header %>
+
+<div class="container">
+    <div class="ui two column centered grid">
+        <div class="right floated left aligned four wide column">
+            <div class="ui cards">
+                <div class="card">
+                    <% if (locals.user && locals.message && locals.message.email != locals.user.email){ %>
+                    <div class="content">
+                        <div class="userCard">
+                            <div class="info">
+                                <p><%= locals.message.user.nickName %></p>
+                                <p class="meta"><%= locals.message.user.gender %></p>
+                            </div>
+                        </div>
+                        <div class="description">
+                            <%= locals.message.user.signature %>
+                        </div>
+                    </div>
+                    <div class="extra content">
+                        <a class=""><i class="send icon"></i>私信</a>
+                        <a class="right floated"><i class="plus icon"></i>加为好友</a>
+                    </div>
+                    <% }else{ %>
+                    <div class="content">
+                        <div class="userCard">
+                            <div class="info">
+                                <p><%= locals.user.nickName %></p>
+                                <p class="meta"><%= locals.user.gender %></p>
+                            </div>
+                        </div>
+                        <div class="description">
+                            <%= locals.user.signature %>
+                        </div>
+                    </div>
+                    <div class="extra content">
+                        <a href="/user/<%= locals.user.email %>" class=""><i class="home icon"></i>个人主页</a>
+                        <a href="#" class="right floated"><i class="setting icon"></i>设置</a>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        <div class="left floated  twelve wide column">
+            <div class="ui segment">
+                <h2 style="margin-top:0">
+                    <%= locals.message.topic %>
+                </h2>
+                <div class="topic">
+                    发布于<%= locals.message.creatAt %> •
+                    作者 <%= locals.message.user.nickName %> •
+                    <%= locals.message.comments.length %> 个回复 •
+                    <%= locals.message.tab %>
+                </div>
+                <div class="ui divider"></div>
+                <div class="content">
+                    <%= locals.message.content %>
+                </div>
+            </div>
+
+            <% include comment %>
+        </div>
+    </div>
+</div>
+
+<% include footer %>

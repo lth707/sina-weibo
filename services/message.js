@@ -7,7 +7,7 @@ exports.createMessage=function (message) {
 }
 exports.getMessage=function(option){
    if(option._id){
-      return db.findOne({where:{_id:id}});
+      return db.message.findOne({where:{_id:option._id}});
    }else if(option.tab&&option.tab!='全部'){
       return db.message.findAll({where:{tab:option.tab},order:[['creatAt','DESC']],offset:option.offset,limit:option.limit,raw:true})
    }else{
@@ -22,7 +22,9 @@ exports.getMessageCount=function (option) {
    }
 }
 
-
+exports.upDateMessage=function (values,options) {
+   return db.message.update(values,options);
+}
 exports.getPersonMessageCount=function (option) {
    if(option.email&&option.tab&&option.tab!='全部'){
       return db.message.count({where:{email:option.email,tab:option.tab}});

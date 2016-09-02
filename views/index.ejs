@@ -3,9 +3,9 @@
     <div class="ui two column centered grid">
         <div class="right floated left aligned four wide column">
             <% if(locals.user){ %>
-                <% var name = locals.user.name %>
-                <% include partials/userCard %>
-                <% include partials/createCard %>
+            <% var name = locals.user.name %>
+            <% include partials/userCard %>
+            <% include partials/createCard %>
             <% } %>
 
             <% include partials/linkCard %>
@@ -14,6 +14,31 @@
             <% include partials/tab %>
             <% include partials/list %>
             <% include partials/pagination %>
+        </div>
+    </div>
+    <div class="ui small modal">
+        <i class="close icon"></i>
+        <div class="header">
+            转发
+        </div>
+        <div class="content">
+            <div class="ui form">
+                <h4 class="ui dividing header"></h4>
+                <div class="field">
+                    <label>转发评论</label>
+                    <textarea id="forwardContent"></textarea>
+                </div>
+                <div class="field" style="text-align:right">
+                    <input type="hidden" id="msg_id">
+                    <input type="hidden" id="comment_count">
+                    <input type="hidden" id="forward_count">
+                    <div class="ui orange button">转发</div>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <legend class="topic" id="messageForwardCount"></legend>
+            <div id="messageForwardInfo" style="text-align:left"></div>
         </div>
     </div>
 </div>
