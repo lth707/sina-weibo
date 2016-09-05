@@ -386,16 +386,16 @@ function postForwardComment(req, res, next) {
                 return forwardMessage;
             }
 
-        }).then(function(message){
+        }).then(function(forwardMessage){
             
-            return dbAccess.createMessage(message).then(function(){
+            return dbAccess.createMessage(forwardMessage).then(function(){
                 var comment=new Object();
                 comment.email = req.session[req.session.id].email;
                 comment.toEmail = '';
                 comment.content = body.forwardCommentContent;
                 comment.creatAt = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
                 comment.isForward = true;
-                comment.msgId = message._id;
+                comment.msgId = body.msgId;
                 return dbAccess.createComment(comment).then(function () {
                     return dbAccess.upDateMessage({commentCount:parseInt(body.commentCount)+1,forwardCount:parseInt(body.forwardCount)+1},{where:{_id:body.msgId}});
                 })
