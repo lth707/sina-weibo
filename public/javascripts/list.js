@@ -12,14 +12,20 @@ $('[id = forwardBtn]').click(function (e) {
             location = '/login'
         } else {
             var message = JSON.parse(result.message);
-            $('h4.ui.dividing.header').html('@' + message.user.nickName + ':' + message.content);
+            var index=message.content.indexOf('<')
+            var messageContent=(index!=-1)?$(message.content.slice(index)).html():message.content;
+            $('h4.ui.dividing.header').html('@' + message.user.nickName + ':' + messageContent);
             $('#messageForwardCount').html('当前已转发' + message.forwardComments.length + '次');
             var messageForwardInfo = ''
+            var forwardContent='';
             message.forwardComments.forEach(function (frowardComment) {
                 messageForwardInfo += '<div class="comment"> <div class="content"><a class="ui mini circular image" href="/user/' + frowardComment.user.email + '"><img src="' + frowardComment.user.head + '"> </a> <a class="author" href="/user/' + frowardComment.user.email + '">' + frowardComment.user.nickName + '</a><div class="ui mini text">' + frowardComment.content + '</div></div></div>'
+                forwardContent+='//'+'@'+frowardComment.user.nickName+':'+frowardComment.content;
             });
             $('#messageForwardInfo').html(messageForwardInfo);
-            $('#forwardContent').val('//' + '@' + message.user.nickName + ':转发微博');
+
+
+            $('#forwardContent').val(forwardContent);
             setCursorPosition(document.getElementById('forwardContent'), 0);
             $('#msg_id').val(message._id);
             $('#comment_count').val(message.commentCount);
@@ -47,6 +53,7 @@ $('div.ui.orange.button').click(function (e) {
         $("[id = commentBtn][data-messageid=" + msgId + "]").html('评论' + result.commentCount);
         $('.small.modal')
             .modal('hide');
+        location.reload();
     });
 });
 $('[id = commentBtn]').click(function (e) {

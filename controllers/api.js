@@ -5,6 +5,7 @@ var dbAccess = require('../services');
 var Promise = require('bluebird').noConflict();
 var moment = require('moment-timezone');
 var config=require('config');
+var uuid=require('node-uuid');
 exports.getSignup = getSignup;
 exports.postSignup = postSignup;
 exports.checkLogin = checkLogin;
@@ -162,7 +163,6 @@ function getCreate(req, res, next) {
 }
 
 function postCreate(req, res, next) {
-    console.log(req.body);
     var message = new Object();
 
     if (req.session && req.session[req.session.id]) {
@@ -250,6 +250,13 @@ function getMessageAndComment(req, res, next) {
         return dbAccess.getUserByEmail(message.email).then(function (user) {
             delete user.password;
             message.user = user;
+            if(message.content.indexOf('</div>')!=-1){
+
+                var a=message.content.indexOf('<div');
+                var b=message.content.indexOf('>',a);
+                var length=b-a+1;
+                message.content=message.content.slice(message.content.indexOf('<div')+length,message.content.indexOf('</div>'));
+            }
             res.locals.message = message;
             return;
         });
@@ -277,7 +284,6 @@ function getMessageAndComment(req, res, next) {
 
         })
     }).then(function () {
-        // console.log(res.locals);
         return res.render('message');
 
     });
@@ -336,7 +342,6 @@ function getForwardAndMessage(req, res, next) {
                         });
                     }).then(function () {
                         message.dataValues.forwardComments = forwardComments;
-                        console.log(message);
                         return res.send({code: 200, message: JSON.stringify(message)});
                     });
                 });
@@ -351,18 +356,54 @@ function getForwardAndMessage(req, res, next) {
 function postForwardComment(req, res, next) {
     if (req.session && req.session[req.session.id]) {
         var body=req.body;
-        var comment=new Object();
-        comment.email = req.session[req.session.id].email;
-        comment.toEmail = '';
-        comment.content = body.forwardCommentContent;
-        comment.creatAt = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
-        comment.isForward = true;
-        comment.msgId = body.msgId;
-        dbAccess.createComment(comment).then(function () {
-            return dbAccess.upDateMessage({commentCount:parseInt(body.commentCount)+1,forwardCount:parseInt(body.forwardCount)+1},{where:{_id:body.msgId}});
+        dbAccess.getMessage({_id: body.msgId}).then(function (message) {
+            var forwardMessage=new Object();
+            forwardMessage._id=uuid.v1();
+            forwardMessage.creatAt=moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
+            forwardMessage.commentCount=0;
+            forwardMessage.supportCount=0;
+            forwardMessage.email=req.session[req.session.id].email;
+            forwardMessage.from=body.msgId;
+            forwardMessage.forwardCount=0;
+            forwardMessage.pictures='';
+            forwardMessage.tab='全部';
+            if(message.from!=''){
+                return (function getOrginMessage(message) {
+                    return dbAccess.getMessage({_id:message.from}).then(function (messageOrign) {
+                        if(messageOrign.from!=''){
+                            return getOrginMessage(messageOrign);
+                        }else{
+                            forwardMessage.content=body.forwardCommentContent+'<div class="ui visible message">' +messageOrign.content+' </div>';
+                            forwardMessage.topic=messageOrign.topic;
+                            return forwardMessage;
+                        }
+                    });
+                })(message);
+
+            }else{
+                forwardMessage.content=body.forwardCommentContent+'<div class="ui visible message">' +message.content+' </div>';
+                forwardMessage.topic=message.topic;
+                return forwardMessage;
+            }
+
+        }).then(function(message){
+            
+            return dbAccess.createMessage(message).then(function(){
+                var comment=new Object();
+                comment.email = req.session[req.session.id].email;
+                comment.toEmail = '';
+                comment.content = body.forwardCommentContent;
+                comment.creatAt = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
+                comment.isForward = true;
+                comment.msgId = message._id;
+                return dbAccess.createComment(comment).then(function () {
+                    return dbAccess.upDateMessage({commentCount:parseInt(body.commentCount)+1,forwardCount:parseInt(body.forwardCount)+1},{where:{_id:body.msgId}});
+                })
+            });
         }).then(function () {
             return res.send({commentCount:parseInt(body.commentCount)+1,forwardCount:parseInt(body.forwardCount)+1});
-        })
+        });
+       
     } else {
         req.flash('error', '请先登录！');
         return res.send({code: 304});
