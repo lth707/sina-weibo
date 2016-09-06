@@ -14,4 +14,12 @@ module.exports=function (router) {
   router.post('/create',api.postCreate);
 
   router.get('/user/:email',api.getUserInfo);
+  
+  router.get('/comment/:id',api.checkLogout,api.getMessageAndComment);
+  router.post('/comment',api.checkLogout,api.postComment);
+  
+  router.post('/good',api.checkLogout,api.postGoodForMessage);
+
+  router.get('/forward',api.getForwardAndMessage);
+  router.post('/forward',api.postForwardComment);
 }

@@ -2,39 +2,87 @@
 <div class="container">
     <div class="ui two column centered grid">
         <div class="right floated left aligned four wide column">
+            <% if((locals.user && locals.user.email == locals.lookUser.email)){ %>
+            <div class="ui cards">
+                <div class="card">
+
+                    <div class="content">
+                        <div class="userCard">
+                            <div class="info">
+                                <p><%= locals.user.nickName %></p>
+                                <p class="meta"><%= locals.user.gender %></p>
+                            </div>
+                        </div>
+                        <div class="description">
+                            <%= locals.user.signature %>
+                        </div>
+                    </div>
+                    <div class="extra content">
+                        <a href="/user/<%= locals.user.email %>" class=""><i class="home icon"></i>个人主页</a>
+                        <a href="#" class="right floated"><i class="setting icon"></i>设置</a>
+                    </div>
+
+                </div>
+            </div>
+            <% }else{ %>
+            <div class="ui cards">
+                <div class="card">
+
+                    <div class="content">
+                        <div class="userCard">
+                            <div class="info">
+                                <p><%= locals.lookUser.nickName %></p>
+                                <p class="meta"><%= locals.lookUser.gender %></p>
+                            </div>
+                        </div>
+                        <div class="description">
+                            <%= locals.lookUser.signature %>
+                        </div>
+                    </div>
+                    <div class="extra content">
+                        <a class=""><i class="send icon"></i>私信</a>
+                        <a class="right floated"><i class="plus icon"></i>加为好友</a>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+
             <% if(locals.user){ %>
             <% var name = locals.user.name %>
-            <% include partials/userCard %>
             <% include partials/createCard %>
             <% } %>
 
             <% include partials/linkCard %>
         </div>
         <div class="left floated twelve wide column">
-            <%if(locals.tabTitles.length==3){%>
+            <% if(locals.tabTitles.length == 3){ %>
             <div class="ui three item menu">
-                <%locals.tabTitles.forEach(function (tabTitle){%>
-                <a href="/user/<%=lookUser.email%>?tabTitle=<%= tabTitle%>" class="item <%= (tabTitle==locals.tabTitle)?'active':''%>"><%= tabTitle%></a>
-                <%});%>
+                <% locals.tabTitles.forEach(function (tabTitle){ %>
+                <a href="/user/<%= lookUser.email %>?tabTitle=<%= tabTitle %>"
+                   class="item <%= (tabTitle == locals.tabTitle) ? 'active' : '' %>"><%= tabTitle %></a>
+                <% }); %>
             </div>
-            <%}else{%>
+            <% }else{ %>
             <div class="ui two item menu">
-                <%locals.tabTitles.forEach(function (tabTitle) {%>
-                <a href="/user/<%=lookUser.email%>?tabTitle=<%= tabTitle%>" class="item <%= (tabTitle==locals.tabTitle)?'active':''%>"><%= tabTitle%></a>
-                <%})%>
+                <% locals.tabTitles.forEach(function (tabTitle) { %>
+                <a href="/user/<%= lookUser.email %>?tabTitle=<%= tabTitle %>"
+                   class="item <%= (tabTitle == locals.tabTitle) ? 'active' : '' %>"><%= tabTitle %></a>
+                <% }) %>
             </div>
-            <%}%>
+            <% } %>
             </br>
-            <%if(locals.tabTitle=='我的主页'||locals.tabTitle=='他的主页'||locals.tabTitle=='她的主页'){%>
+            <% if(locals.tabTitle == '我的主页' || locals.tabTitle == '他的主页' || locals.tabTitle == '她的主页'){ %>
             <div class="ui top attached tabular menu">
-                <a href="/user/<%=lookUser.email%>" class="item <%= (locals.tab==locals.tabs[0]) ? 'active':''%>"><%= locals.tabs[0]%></a>
-                <% locals.tabs.slice(1).forEach(function (tab) {%>
-                <a href="/user/<%=lookUser.email%>?tab=<%= tab%>" class="item <%= (locals.tab==tab)?'active':''%>"><%= tab%></a>
-                <%})%>
+                <a href="/user/<%= lookUser.email %>"
+                   class="item <%= (locals.tab == locals.tabs[0]) ? 'active' : '' %>"><%= locals.tabs[0] %></a>
+                <% locals.tabs.slice(1).forEach(function (tab) { %>
+                <a href="/user/<%= lookUser.email %>?tab=<%= tab %>"
+                   class="item <%= (locals.tab == tab) ? 'active' : '' %>"><%= tab %></a>
+                <% }) %>
             </div>
             <% include partials/list %>
             <% include partials/pagination %>
-            <%}%>
+            <% } %>
         </div>
     </div>
 </div>

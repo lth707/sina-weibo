@@ -14,13 +14,13 @@
                     <span><a href="/topic/<%= message.topic %>" style="font-size: 25px; color:#7eb3fe;">#<%= message.topic %>#</a></span>
                     <% } %>
                     <span style="font-size: 25px">
-                        <%= message.content %></span>
+                        <%- message.content %></span>
                 </div>
 
                 <div class="ui basic buttons">
-                    <button class="ui small button">转发 <%= message.forwardCount %></button>
-                    <button class="ui small button">评论 <%= message.commentCount %></button>
-                    <button class="ui small button">点赞 <%= message.supportCount %></button>
+                    <button class="ui small button" id="forwardBtn" data-messageid=<%=message._id%>>转发 <%= message.forwardCount %></button>
+                    <button class="ui small button" id="commentBtn" data-messageid=<%=message._id%>>评论 <%= message.commentCount %></button>
+                    <button class="ui small button" id="postGoodBtn" data-messageid=<%=message._id%>>点赞 <%= message.supportCount %></button>
                 </div>
             </div>
         </div>

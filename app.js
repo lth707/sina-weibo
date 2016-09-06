@@ -10,7 +10,7 @@ var config = require('config');
 var expressSession = require('express-session');
 var SessionStore = require('connect-redis')(expressSession);
 var flash = require('express-flash');
-
+var db=require('./models');
 var app = express();
 
 fs.mkdirsSync(config.pictureFile.headPictureFile);
@@ -85,5 +85,7 @@ app.use(function (err, req, res, next) {
     });
 });
 
-
+db.sequelize.sync({force: false}).catch(function (err) {
+    console.log(err);
+});
 module.exports = app;
