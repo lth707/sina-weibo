@@ -1,4 +1,8 @@
+'use strict'
 var api=require('../controllers/api');
+var multer  = require('multer');
+var upload = multer({ dest: '../../../sinaWeiboPictures/upload/' });
+let config = require('config'); 
 module.exports=function (router) {
   router.get('/signup',api.checkLogin,api.getSignup);
   router.post('/signup',api.checkLogin,api.checkFormData,api.postSignup);
@@ -12,6 +16,14 @@ module.exports=function (router) {
   
   router.get('/create',api.getCreate);
   router.post('/create',api.postCreate);
+  router.post('/messageUpload',upload.array('photos'),function (req,res,next) {
+    let pictureNames=[];
+    req.files.forEach(function (file) {
+      pictureNames.push(file.filename);
+    });
+
+    res.send({pictures:pictureNames,puloadPath:config.pictureFile.upload});
+  });
 
   router.get('/user/:email',api.getUserInfo);
   

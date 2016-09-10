@@ -15,9 +15,9 @@ module.exports = {
     },
     filePath:filePath,
     pictureFile:{
-        upload:'/upload/',
+        upload:'upload/',
         head:'/head/',
-        message:'/message/',
+        message:'/message',
         uploadPictureFile:path.join(filePath,'upload'),//上传图片临时存储的路径
         headPictureFile:path.join(filePath,'head'),//头像的图片存放的路径
         messagePictureFile:path.join(filePath,'message')//消息图片存放的路径
