@@ -70,7 +70,8 @@
                     img.src = uploadPath+src;
                     prvbox.appendChild(img);
                 });
-                $('#pictures').val($('#pictures').val()+','+pictures.join(','));
+                var a=($('#pictures').val()=='')?pictures.join(','):$('#pictures').val()+','+pictures.join(',');
+                $('#pictures').val(a);
             }
         });
 

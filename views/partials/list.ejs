@@ -18,19 +18,32 @@
                     <span><a href="/topic/<%= message.topic %>"
                              style="font-size: 25px; color:#7eb3fe;">#<%= message.topic %>#</a></span>
                     <% } %>
-
-                    <% if(message.forwardCommentContent){ %>
                     <span style="font-size: 25px">
+                        <% if(message.forwardCommentContent){ %>
                         <%= message.forwardCommentContent %>
                         <div class="ui visible message">
                             <%= message.content %>
+                            <% if(message.pictures.length > 0){ %>
+                            <div class="ui small images">
+                                <% message.pictures.forEach(function (picture, i) { %>
+                                <img src=<%= picture %>>
+                                <% }); %>
+                            </div>
+                            <% } %>
                         </div>
-                    </span>
-                    <% }else{ %>
-                    <span style="font-size: 25px">
+                        <% }else{ %>
                         <%= message.content %>
+                        <% if(message.pictures.length > 0){ %>
+                        <div style="margin-left: 13px">
+                        <div class="ui small images">
+                            <% message.pictures.forEach(function (picture, i) { %>
+                            <img src=<%= picture %>>
+                            <% }); %>
+                        </div>
+                        </div>
+                        <% } %>
+                        <% } %>
                     </span>
-                    <% } %>
                 </div>
 
                 <div class="ui basic buttons">

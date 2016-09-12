@@ -27,7 +27,7 @@ module.exports=function (router) {
 
   router.get('/user/:email',api.getUserInfo);
   
-  router.get('/comment/:id',api.checkLogout,api.getMessageAndComment);
+  router.get('/comment/:id',api.getMessageAndComment);
   router.post('/comment',api.checkLogout,api.postComment);
   
   router.post('/good',api.checkLogout,api.postGoodForMessage);

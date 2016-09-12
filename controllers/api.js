@@ -36,6 +36,13 @@ function getIndex(req, res, next) {
     res.locals.total = result;
     dbAccess.getMessage({tab: req.query.tab, offset: (p - 1) * 10, limit: 10}).then(function (results) {
       return Promise.each(results, function (result) {
+        if(result.pictures){
+          result.pictures=result.pictures.split(',').map((picture)=>{
+            return path.join(config.pictureFile.message,picture);
+          });
+        }else{
+          result.pictures=[];
+        }
         if (result.from) {
           return dbAccess.getMessageFrowardComment({msgId: result._id, isForward: 1}).then(function (forwardComment) {
              result.forwardCommentContent=forwardComment[0].content;
@@ -276,48 +283,46 @@ function getUserInfo(req, res, next) {
 
 function getMessageAndComment(req, res, next) {
   var _id         = req.params['id'];
-  res.locals.user = req.session[req.session.id];
-  dbAccess.getMessage({_id: _id}).then(function (message) {
-    return dbAccess.getUserByEmail(message.email).then(function (user) {
-      delete user.password;
-      message.user = user;
-      if (message.content.indexOf('</div>') != -1) {
-
-        var a           = message.content.indexOf('<div');
-        var b           = message.content.indexOf('>', a);
-        var length      = b - a + 1;
-        message.content = message.content.slice(message.content.indexOf('<div') + length, message.content.indexOf('</div>'));
-      }
-      res.locals.message = message;
-      return;
-    });
-  }).then(function () {
-    return dbAccess.getCommentsByMessageId({msgId: _id}).then(function (comments) {
-
-      return Promise.each(comments, function (comment) {
-        return dbAccess.getUserByEmail(comment.email).then(function (user) {
-          delete user.password;
-          comment.commentUser = user;
-          if (comment.toEmail) {
-            return dbAccess.getUserByEmail(comment.toEmail).then(function (user) {
-              delete user.password;
-              comment.toReplyUser = user;
-              return;
-            });
-          } else {
-            return;
-          }
-        });
-      }).then(function () {
-        res.locals.message.comments = comments;
+  if (req.session[req.session.id]){
+    res.locals.user = req.session[req.session.id];
+    dbAccess.getMessage({_id: _id}).then(function (message) {
+      return dbAccess.getUserByEmail(message.email).then(function (user) {
+        delete user.password;
+        message.user = user;
+        res.locals.message = message;
         return;
+      });
+    }).then(function () {
+      return dbAccess.getCommentsByMessageId({msgId: _id}).then(function (comments) {
+
+        return Promise.each(comments, function (comment) {
+          return dbAccess.getUserByEmail(comment.email).then(function (user) {
+            delete user.password;
+            comment.commentUser = user;
+            if (comment.toEmail) {
+              return dbAccess.getUserByEmail(comment.toEmail).then(function (user) {
+                delete user.password;
+                comment.toReplyUser = user;
+                return;
+              });
+            } else {
+              return;
+            }
+          });
+        }).then(function () {
+          res.locals.message.comments = comments;
+          return;
+        })
+
       })
+    }).then(function () {
+      return res.render('message');
 
-    })
-  }).then(function () {
-    return res.render('message');
+    });
+  }else{
+    return res.redirect('/login');
+  }
 
-  });
 }
 
 function postComment(req, res, next) {
@@ -396,7 +401,6 @@ function postForwardComment(req, res, next) {
       forwardMessage.email        = req.session[req.session.id].email;
       forwardMessage.from         = body.msgId;
       forwardMessage.forwardCount = 0;
-      forwardMessage.pictures     = '';
       forwardMessage.tab          = '全部';
       if (message.from != '') {
         return (function getOrginMessage(message) {
@@ -406,6 +410,7 @@ function postForwardComment(req, res, next) {
             } else {
               forwardMessage.content = messageOrgin.content;
               forwardMessage.topic   = messageOrgin.topic;
+              forwardMessage.pictures     =messageOrgin.pictures;
               return forwardMessage;
             }
           });
@@ -414,6 +419,7 @@ function postForwardComment(req, res, next) {
       } else {
         forwardMessage.content = message.content;
         forwardMessage.topic   = message.topic;
+        forwardMessage.pictures=message.pictures;
         return forwardMessage;
       }
 
