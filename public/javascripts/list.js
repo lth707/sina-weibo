@@ -13,8 +13,7 @@ $('[id = forwardBtn]').click(function (e) {
             location = '/login'
         } else {
             var message = JSON.parse(result.message);
-            var index=message.content.indexOf('<')
-            var messageContent=(index!=-1)?$(message.content.slice(index)).html():message.content;
+            var messageContent=message.content;
             $('h4.ui.dividing.header').html('@' + message.user.nickName + ':' + messageContent);
             $('#messageForwardCount').html('当前已转发' + message.forwardComments.length + '次');
             var messageForwardInfo = ''

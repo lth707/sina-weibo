@@ -2,13 +2,14 @@
  * Created by duoyi on 2016/8/15.
  */
 'use strict'
-var dbAccess                 = require('../services');
-var Promise                  = require('bluebird').noConflict();
-var moment                   = require('moment-timezone');
-var config                   = require('config');
-var uuid                     = require('node-uuid');
-const fs                     = require('fs');
-const path                   = require('path');
+var dbAccess = require('../services');
+var Promise  = require('bluebird').noConflict();
+var moment   = require('moment-timezone');
+var config   = require('config');
+var uuid     = require('node-uuid');
+const fs     = require('fs');
+const path   = require('path');
+
 exports.getSignup            = getSignup;
 exports.postSignup           = postSignup;
 exports.checkLogin           = checkLogin;
@@ -26,6 +27,7 @@ exports.postComment          = postComment;
 exports.postGoodForMessage   = postGoodForMessage;
 exports.getForwardAndMessage = getForwardAndMessage;
 exports.postForwardComment   = postForwardComment;
+
 function getIndex(req, res, next) {
   res.locals.tabs = ["全部", "原创", "图片", "视频", "音乐", '文章'];
   res.locals.tab  = req.query.tab || '全部';
@@ -34,13 +36,26 @@ function getIndex(req, res, next) {
     res.locals.total = result;
     dbAccess.getMessage({tab: req.query.tab, offset: (p - 1) * 10, limit: 10}).then(function (results) {
       return Promise.each(results, function (result) {
-        return dbAccess.getUserByEmail(result.email).then(function (user) {
-          delete user.password;
-          result.user = user;
-          return;
-        })
+        if (result.from) {
+          return dbAccess.getMessageFrowardComment({msgId: result._id, isForward: 1}).then(function (forwardComment) {
+             result.forwardCommentContent=forwardComment[0].content;
+             return;
+          }).then(function () {
+            return dbAccess.getUserByEmail(result.email).then(function (user) {
+              delete user.password;
+              result.user = user;
+              return;
+            });
+          });
+        } else {
+          return dbAccess.getUserByEmail(result.email).then(function (user) {
+            delete user.password;
+            result.user = user;
+            return;
+          })
+        }
       }).then(function () {
-        res.locals.messageArr = results
+        res.locals.messageArr = results;
         return;
       })
     }).then(function () {
@@ -173,17 +188,19 @@ function postCreate(req, res, next) {
       req.flash('error', '请填写完整！');
       return res.redirect('/create');
     }
-    req.body.pictures.split(',').forEach(function (pictureName) {
-      let pictureOldPath = path.join(config.pictureFile.uploadPictureFile, pictureName);
-      if (fs.existsSync(pictureOldPath)) {
-        let pictureNewPath = path.join(config.pictureFile.messagePictureFile, pictureName);
-        try {
-          fs.renameSync(pictureOldPath, pictureNewPath);
-        } catch (err) {
-          return res.json({msg: '转存图片出错'});
+    if (req.body.pictures) {
+      req.body.pictures.split(',').forEach(function (pictureName) {
+        let pictureOldPath = path.join(config.pictureFile.uploadPictureFile, pictureName);
+        if (fs.existsSync(pictureOldPath)) {
+          let pictureNewPath = path.join(config.pictureFile.messagePictureFile, pictureName);
+          try {
+            fs.renameSync(pictureOldPath, pictureNewPath);
+          } catch (err) {
+            return res.json({msg: '转存图片出错'});
+          }
         }
-      }
-    });
+      });
+    }
     message.email        = req.body.email;
     message.tab          = req.body.tab;
     message.topic        = req.body.topic;
@@ -191,7 +208,7 @@ function postCreate(req, res, next) {
     message.forwardCount = 0;
     message.commentCount = 0;
     message.from         = '';
-    message.pictures     = req.body.pictures;
+    message.pictures     = req.body.pictures || '';
     message.creatAt      = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
     dbAccess.createMessage(message).then(function (result) {
       req.flash('success', '发布成功！');
@@ -346,7 +363,7 @@ function getForwardAndMessage(req, res, next) {
         message.dataValues.user = user;
         return;
       }).then(function () {
-        return dbAccess.getMessageFrowardComment({msgId: msgId}).then(function (forwardComments) {
+        return dbAccess.getMessageFrowardComment({msgId: msgId, isForward: 0}).then(function (forwardComments) {
           return Promise.each(forwardComments, function (forwardComment) {
             return dbAccess.getUserByEmail(forwardComment.email).then(function (user) {
               delete user.password;
@@ -374,7 +391,7 @@ function postForwardComment(req, res, next) {
       var forwardMessage          = new Object();
       forwardMessage._id          = uuid.v1();
       forwardMessage.creatAt      = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
-      forwardMessage.commentCount = 0;
+      forwardMessage.commentCount = 1;
       forwardMessage.supportCount = 0;
       forwardMessage.email        = req.session[req.session.id].email;
       forwardMessage.from         = body.msgId;
@@ -383,19 +400,19 @@ function postForwardComment(req, res, next) {
       forwardMessage.tab          = '全部';
       if (message.from != '') {
         return (function getOrginMessage(message) {
-          return dbAccess.getMessage({_id: message.from}).then(function (messageOrign) {
-            if (messageOrign.from != '') {
-              return getOrginMessage(messageOrign);
+          return dbAccess.getMessage({_id: message.from}).then(function (messageOrgin) {
+            if (messageOrgin.from != '') {
+              return getOrginMessage(messageOrgin);
             } else {
-              forwardMessage.content = body.forwardCommentContent + '<div class="ui visible message">' + messageOrign.content + ' </div>';
-              forwardMessage.topic   = messageOrign.topic;
+              forwardMessage.content = messageOrgin.content;
+              forwardMessage.topic   = messageOrgin.topic;
               return forwardMessage;
             }
           });
         })(message);
 
       } else {
-        forwardMessage.content = body.forwardCommentContent + '<div class="ui visible message">' + message.content + ' </div>';
+        forwardMessage.content = message.content;
         forwardMessage.topic   = message.topic;
         return forwardMessage;
       }
@@ -403,25 +420,37 @@ function postForwardComment(req, res, next) {
     }).then(function (forwardMessage) {
 
       return dbAccess.createMessage(forwardMessage).then(function () {
+        //创建新建微博的转发评论。
         var comment       = new Object();
         comment.email     = req.session[req.session.id].email;
         comment.toEmail   = '';
         comment.content   = body.forwardCommentContent;
         comment.creatAt   = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
         comment.isForward = true;
-        comment.msgId     = body.msgId;
+        comment.msgId     = forwardMessage._id;
         return dbAccess.createComment(comment).then(function () {
+          //创建被转发微博的评论。
+          var comment       = new Object();
+          comment.email     = req.session[req.session.id].email;
+          comment.toEmail   = '';
+          comment.content   = body.forwardCommentContent;
+          comment.creatAt   = moment().tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm:ss');
+          comment.isForward = false;
+          comment.msgId     = body.msgId;
+          return dbAccess.createComment(comment);
+        }).then(function () {
           return dbAccess.upDateMessage({
-            commentCount: parseInt(body.commentCount) + 1,
-            forwardCount: parseInt(body.forwardCount) + 1
+            forwardCount: parseInt(body.forwardCount) + 1,
+            commentCount: parseInt(body.commentCount) + 1
           }, {where: {_id: body.msgId}});
-        })
+        });
       });
     }).then(function () {
       return res.send({commentCount: parseInt(body.commentCount) + 1, forwardCount: parseInt(body.forwardCount) + 1});
     });
 
-  } else {
+  }
+  else {
     req.flash('error', '请先登录！');
     return res.send({code: 304});
   }

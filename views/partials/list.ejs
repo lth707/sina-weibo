@@ -4,23 +4,45 @@
         <% locals.messageArr.forEach(function (message, index) { %>
         <div class="item" style="text-align: center">
             <div>
-                <span><a href="/user/<%= message.user.email %>"><img style="width: 50px;height: 50px;border-radius: 25px" src="<%= locals.picturesHostAndPort + locals.head + message.user.head %>"></a></span>
-                <span class="topic" style="font-size: 30px"><a href="/user/<%= message.user.email %>" style="font-size: 30px"><b><%= message.user.nickName %></b></a><%= message.tab %><div style="font-size: 12px"><%= message.creatAt %> </div></span>
+                <span><a href="/user/<%= message.user.email %>"><img
+                                style="width: 50px;height: 50px;border-radius: 25px"
+                                src="<%= locals.picturesHostAndPort + locals.head + message.user.head %>"></a></span>
+                <span class="topic" style="font-size: 30px"><a href="/user/<%= message.user.email %>"
+                                                               style="font-size: 30px"><b><%= message.user.nickName %></b></a><%= message.tab %>
+                    <div style="font-size: 12px"><%= message.creatAt %> </div></span>
             </div>
             <br>
             <div class="content">
                 <div>
                     <% if(message.topic != ''){ %>
-                    <span><a href="/topic/<%= message.topic %>" style="font-size: 25px; color:#7eb3fe;">#<%= message.topic %>#</a></span>
+                    <span><a href="/topic/<%= message.topic %>"
+                             style="font-size: 25px; color:#7eb3fe;">#<%= message.topic %>#</a></span>
                     <% } %>
+
+                    <% if(message.forwardCommentContent){ %>
                     <span style="font-size: 25px">
-                        <%- message.content%></span>
+                        <%= message.forwardCommentContent %>
+                        <div class="ui visible message">
+                            <%= message.content %>
+                        </div>
+                    </span>
+                    <% }else{ %>
+                    <span style="font-size: 25px">
+                        <%= message.content %>
+                    </span>
+                    <% } %>
                 </div>
 
                 <div class="ui basic buttons">
-                    <button class="ui small button" id="forwardBtn" data-messageid=<%=message._id%>><i class="share alternate icon" data-messageid=<%=message._id%>><%= message.forwardCount %></i></button>
-                    <button class="ui small button" id="commentBtn" data-messageid=<%=message._id%>><i class="talk outline icon"  data-messageid=<%=message._id%>><%= message.commentCount %></i></button>
-                    <button class="ui small button" id="postGoodBtn" data-messageid=<%=message._id%>><i class="thumbs outline up icon" data-messageid=<%=message._id%>><%= message.supportCount %></i></button>
+                    <button class="ui small button" id="forwardBtn" data-messageid=<%= message._id %>><i
+                                class="share alternate icon"
+                                data-messageid=<%= message._id %>><%= message.forwardCount %></i></button>
+                    <button class="ui small button" id="commentBtn" data-messageid=<%= message._id %>><i
+                                class="talk outline icon"
+                                data-messageid=<%= message._id %>><%= message.commentCount %></i></button>
+                    <button class="ui small button" id="postGoodBtn" data-messageid=<%= message._id %>><i
+                                class="thumbs outline up icon"
+                                data-messageid=<%= message._id %>><%= message.supportCount %></i></button>
                 </div>
             </div>
         </div>
