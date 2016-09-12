@@ -2,6 +2,7 @@
  * Created by duoyi on 2016/8/30.
  */
 $('[id = forwardBtn]').click(function (e) {
+
     ajax({
         'type': 'GET',
         'data': {id: $(e.target).attr('data-messageid')},
@@ -12,8 +13,7 @@ $('[id = forwardBtn]').click(function (e) {
             location = '/login'
         } else {
             var message = JSON.parse(result.message);
-            var index=message.content.indexOf('<')
-            var messageContent=(index!=-1)?$(message.content.slice(index)).html():message.content;
+            var messageContent=message.content;
             $('h4.ui.dividing.header').html('@' + message.user.nickName + ':' + messageContent);
             $('#messageForwardCount').html('当前已转发' + message.forwardComments.length + '次');
             var messageForwardInfo = ''
@@ -49,8 +49,8 @@ $('div.ui.orange.button').click(function (e) {
         'dataType': 'json'
     }).success(function (result) {
         var msgId = $('#msg_id').val();
-        $("[id = forwardBtn][data-messageid=" + msgId + "]").html('转发' + result.forwardCount);
-        $("[id = commentBtn][data-messageid=" + msgId + "]").html('评论' + result.commentCount);
+        $("[id = forwardBtn][data-messageid=" + msgId + "]>i").html(result.forwardCount);
+        $("[id = commentBtn][data-messageid=" + msgId + "]>i").html(result.commentCount);
         $('.small.modal')
             .modal('hide');
         location.reload();
@@ -61,16 +61,23 @@ $('[id = commentBtn]').click(function (e) {
     location = '/comment/' + id;
 });
 $('[id = postGoodBtn]').click(function (e) {
+    var supportCount=$(e.target).children('i').text()?(parseInt($(e.target).children('i').text())):(parseInt($(e.target).text()))
     ajax({
         'type': 'POST',
         'data': {
             id: $(e.target).attr('data-messageid'),
-            supportCount: parseInt($(e.target).text().slice(2, $(e.target).text().length))
+            supportCount: supportCount
         },
         'url': '/good',
         'dataType': 'json'
     }).success(function (result) {
-        $(e.target).html('点赞' + result.supportCount);
+        if(result.code&&result.code==304){
+            location='/login';
+        }
+        else{
+            $(e.target).children('i').text()?$(e.target).children('i').html(result.supportCount):$(e.target).html(result.supportCount);
+        }
+
     });
 });
 

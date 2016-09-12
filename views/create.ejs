@@ -1,48 +1,80 @@
-<%include header%>
-    <div class="container">
-        <div class="ui two column centered grid">
-            <div class="right floated left aligned four wide column">
-                <% include partials/userCard%>
-            </div>
-            <div class="left floated twelve wide column">
-                <form method="post">
-                    <div class="ui form segment">
-                        <h2 style="margin-top: 0">发表话题</h2>
-                        <div class="field">
-                            <div class="fields">
-                                <div class="field required">
-                                    <label>板块</label>
-                                    <div class="ui selection dropdown">
-                                        <input type="hidden"name="tab">
-                                        <div class="default text">板块</div>
-                                        <i class="dropdown icon"></i>
-                                        <div class="menu">
-                                            <% locals.tabs.slice(1).forEach(function (tab){%>
-                                              <div class="item" data-value="<%=tab%>">
-                                                  <%=tab%>
-                                              </div>
-                                            <%})%>
+<% include header %>
+<div class="container">
+    <div class="ui two column centered grid">
+        <div class="right floated left aligned four wide column">
+            <% include partials/userCard %>
+        </div>
+        <div class="left floated twelve wide column">
+            <form method="post">
+                <div class="ui form segment">
+                    <h2 style="margin-top: 0">发表话题</h2>
+                    <div class="field">
+                        <div class="fields">
+                            <div class="field required">
+                                <label>板块</label>
+                                <div class="ui selection dropdown">
+                                    <input type="hidden" name="tab">
+                                    <div class="default text">板块</div>
+                                    <i class="dropdown icon"></i>
+                                    <div class="menu">
+                                        <% locals.tabs.slice(1).forEach(function (tab){ %>
+                                        <div class="item" data-value="<%= tab %>">
+                                            <%= tab %>
                                         </div>
+                                        <% }) %>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="field">
-                            <label>话题</label>
-                            <input placeholder="话题" type="text" name="topic">
-                        </div>
-                        <div class="field required">
-                            <label>内容</label>
-                            <textarea name="content"></textarea>
-                        </div>
-                        <input type="submit" class="ui button" value="发布">
                     </div>
-                    <input type="hidden" value=<%= locals.user.email%> name="email" id="email" /><br/>
-                </form>
-            </div>
+                    <div class="field">
+                        <label>话题</label>
+                        <input placeholder="话题" type="text" name="topic">
+                    </div>
+                    <div class="field required">
+                        <label>内容</label>
+                        <textarea name="content"></textarea>
+                        <input type="hidden" id="pictures" name="pictures">
+                    </div>
+                    <input id="files" type="file" onchange="previewImage(this, 'prvid')" multiple="multiple">
+                    <div class="ui small images" id="prvid"></div>
+                    <input type="submit" class="ui button" value="发布">
+                </div>
+                <input type="hidden" value=<%= locals.user.email %> name="email" id="email"/><br/>
+            </form>
         </div>
     </div>
+</div>
 <script type="text/javascript">
     $('.ui.dropdown').dropdown();
+    function previewImage(file, prvid) {
+        //创建FormData对象
+        var data = new FormData();
+        //为FormData对象添加数据
+        $.each(file.files, function (i, file) {
+            data.append('photos', file);
+        });
+        $.ajax({
+            url        : '/messageUpload',
+            type       : 'POST',
+            data       : data,
+            cache      : false,
+            contentType: false,    //不可缺
+            processData: false,    //不可缺
+            success    : function (data) {
+                let pictures=data.pictures;
+                let uploadPath=data.puloadPath;
+                prvbox=document.getElementById(prvid);
+                pictures.forEach(function (src) {
+                    var img = document.createElement("img");
+                    img.src = uploadPath+src;
+                    prvbox.appendChild(img);
+                });
+                var a=($('#pictures').val()=='')?pictures.join(','):$('#pictures').val()+','+pictures.join(',');
+                $('#pictures').val(a);
+            }
+        });
+
+    }
 </script>
-<%include footer%>
+<% include footer %>
