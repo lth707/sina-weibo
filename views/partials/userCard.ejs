@@ -2,16 +2,32 @@
     <div class="card">
 
         <div class="content">
-            <div class="userCard">
-                <div class="info">
-                    <p><%= locals.user.nickName %></p>
-                    <p class="meta"><%= locals.user.gender %></p>
-                </div>
+            <img class="right floated circular ui image" src="images/ceshi.jpg">
+            <div class="header">
+                <%= locals.user.nickName %>
             </div>
-            <div class="description">
+            <div class="meta">
                 <%= locals.user.signature %>
             </div>
         </div>
+
+        <div class="content">
+            <div class="ui three column very relaxed grid">
+                <div class="column">
+                    <p>255</p>
+                    <p>关注</p>
+                </div>
+                <div class="column">
+                    <p>255</p>
+                    <p>粉丝</p>
+                </div>
+                <div class="column">
+                    <p>255</p>
+                    <p>微博</p>
+                </div>
+            </div>
+        </div>
+
         <div class="extra content">
             <a href="/user/<%= locals.user.email %>" class=""><i class="home icon"></i>个人主页</a>
             <a href="#" class="right floated"><i class="setting icon"></i>设置</a>
