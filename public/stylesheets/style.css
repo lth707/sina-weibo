@@ -38,22 +38,6 @@ body {
   line-height: 24px
 }
 
-.userCard {
-  height: 48px;
-  margin-bottom: 10px
-}
-
-.userCard img {
-  width: 48px !important;
-  height: 48px;
-  float: left;
-  margin-right: 15px
-}
-
-.userCard .info {
-  line-height: 48px
-}
-
 .list img {
   width: 40px
 }
@@ -69,4 +53,9 @@ body {
 
 .ui.menu .item:before {
   width: 0
+}
+
+.content img {
+  width: 100px;
+  height: 100px
 }
