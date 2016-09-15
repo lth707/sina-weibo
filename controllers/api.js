@@ -27,6 +27,8 @@ exports.postComment          = postComment;
 exports.postGoodForMessage   = postGoodForMessage;
 exports.getForwardAndMessage = getForwardAndMessage;
 exports.postForwardComment   = postForwardComment;
+exports.messageUpLoad        = messageUpLoad;
+exports.searchUser           = searchUser;
 
 function getIndex(req, res, next) {
   res.locals.tabs = ["全部", "原创", "图片", "视频", "音乐", '文章'];
@@ -36,17 +38,17 @@ function getIndex(req, res, next) {
     res.locals.total = result;
     dbAccess.getMessage({tab: req.query.tab, offset: (p - 1) * 10, limit: 10}).then(function (results) {
       return Promise.each(results, function (result) {
-        if(result.pictures){
-          result.pictures=result.pictures.split(',').map((picture)=>{
-            return path.join(config.pictureFile.message,picture);
+        if (result.pictures) {
+          result.pictures = result.pictures.split(',').map((picture)=> {
+            return path.join(config.pictureFile.message, picture);
           });
-        }else{
-          result.pictures=[];
+        } else {
+          result.pictures = [];
         }
         if (result.from) {
           return dbAccess.getMessageFrowardComment({msgId: result._id, isForward: 1}).then(function (forwardComment) {
-             result.forwardCommentContent=forwardComment[0].content;
-             return;
+            result.forwardCommentContent = forwardComment[0].content;
+            return;
           }).then(function () {
             return dbAccess.getUserByEmail(result.email).then(function (user) {
               delete user.password;
@@ -265,12 +267,12 @@ function getUserInfo(req, res, next) {
         limit : 10
       }).then(function (results) {
         return Promise.each(results, function (result) {
-          if(result.pictures){
-            result.pictures=result.pictures.split(',').map((picture)=>{
-              return path.join(config.pictureFile.message,picture);
+          if (result.pictures) {
+            result.pictures = result.pictures.split(',').map((picture)=> {
+              return path.join(config.pictureFile.message, picture);
             });
-          }else{
-            result.pictures=[];
+          } else {
+            result.pictures = [];
           }
           return dbAccess.getUserByEmail(result.email).then(function (user) {
             delete user.password;
@@ -289,13 +291,13 @@ function getUserInfo(req, res, next) {
 };
 
 function getMessageAndComment(req, res, next) {
-  var _id         = req.params['id'];
-  if (req.session[req.session.id]){
+  var _id = req.params['id'];
+  if (req.session[req.session.id]) {
     res.locals.user = req.session[req.session.id];
     dbAccess.getMessage({_id: _id}).then(function (message) {
       return dbAccess.getUserByEmail(message.email).then(function (user) {
         delete user.password;
-        message.user = user;
+        message.user       = user;
         res.locals.message = message;
         return;
       });
@@ -326,7 +328,7 @@ function getMessageAndComment(req, res, next) {
       return res.render('message');
 
     });
-  }else{
+  } else {
     return res.redirect('/login');
   }
 
@@ -415,18 +417,18 @@ function postForwardComment(req, res, next) {
             if (messageOrgin.from != '') {
               return getOrginMessage(messageOrgin);
             } else {
-              forwardMessage.content = messageOrgin.content;
-              forwardMessage.topic   = messageOrgin.topic;
-              forwardMessage.pictures     =messageOrgin.pictures;
+              forwardMessage.content  = messageOrgin.content;
+              forwardMessage.topic    = messageOrgin.topic;
+              forwardMessage.pictures = messageOrgin.pictures;
               return forwardMessage;
             }
           });
         })(message);
 
       } else {
-        forwardMessage.content = message.content;
-        forwardMessage.topic   = message.topic;
-        forwardMessage.pictures=message.pictures;
+        forwardMessage.content  = message.content;
+        forwardMessage.topic    = message.topic;
+        forwardMessage.pictures = message.pictures;
         return forwardMessage;
       }
 
@@ -468,4 +470,20 @@ function postForwardComment(req, res, next) {
     return res.send({code: 304});
   }
 
+}
+
+function messageUpLoad(req, res, next) {
+  let pictureNames = [];
+  req.files.forEach(function (file) {
+    pictureNames.push(file.filename);
+  });
+  res.send({pictures: pictureNames, puloadPath: config.pictureFile.upload});
+}
+
+function searchUser(req,res,next) {
+  console.log(req.query.key);
+  dbAccess.getUserByKey(req.query.key).then(function (users) {
+    console.log(users);
+  });
+  return res.json();
 }

@@ -16,14 +16,9 @@ module.exports=function (router) {
   
   router.get('/create',api.getCreate);
   router.post('/create',api.postCreate);
-  router.post('/messageUpload',upload.array('photos'),function (req,res,next) {
-    let pictureNames=[];
-    req.files.forEach(function (file) {
-      pictureNames.push(file.filename);
-    });
-
-    res.send({pictures:pictureNames,puloadPath:config.pictureFile.upload});
-  });
+  router.post('/messageUpload',upload.array('photos'),api.messageUpLoad);
+   
+ 
 
   router.get('/user/:email',api.getUserInfo);
   
@@ -34,4 +29,6 @@ module.exports=function (router) {
 
   router.get('/forward',api.getForwardAndMessage);
   router.post('/forward',api.postForwardComment);
+  
+  router.get('/search',api.searchUser);
 }

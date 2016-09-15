@@ -7,6 +7,7 @@ var Comment=require('./comment');
 exports.getUserByEmail=User.getUserByEmail;
 exports.addUser=User.addUser;
 exports.getUser=User.getUser;
+exports.getUserByKey=User.getUserByKey;
 exports.createMessage=Message.createMessage;
 exports.getMessage=Message.getMessage;
 exports.getMessageCount=Message.getMessageCount;
