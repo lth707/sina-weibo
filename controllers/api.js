@@ -265,6 +265,13 @@ function getUserInfo(req, res, next) {
         limit : 10
       }).then(function (results) {
         return Promise.each(results, function (result) {
+          if(result.pictures){
+            result.pictures=result.pictures.split(',').map((picture)=>{
+              return path.join(config.pictureFile.message,picture);
+            });
+          }else{
+            result.pictures=[];
+          }
           return dbAccess.getUserByEmail(result.email).then(function (user) {
             delete user.password;
             result.user = user;
